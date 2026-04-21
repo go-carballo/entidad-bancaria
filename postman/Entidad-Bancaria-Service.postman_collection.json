@@ -1,0 +1,553 @@
+{
+  "info": {
+    "name": "Entidad Bancaria Service",
+    "description": "Colección completa para probar el microservicio REST de entidades bancarias.\n\nOrden sugerido:\n1. Alta (POST x3)\n2. Listar todas (GET)\n3. Buscar por ID (GET)\n4. Filtrar por país (GET)\n5. Modificar (PUT)\n6. Duplicado (POST → 409)\n7. Validación (POST → 400)\n8. ID inexistente (GET → 404)\n9. Baja lógica (PATCH)\n10. Solo activas (GET)\n11. Resumen (GET)\n12. Baja física (DELETE)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "santanderId",
+      "value": ""
+    },
+    {
+      "key": "nacionId",
+      "value": ""
+    },
+    {
+      "key": "bbvaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 — Alta",
+      "description": "Crear entidades bancarias (POST → 201 Created)",
+      "item": [
+        {
+          "name": "Alta — Banco Santander",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Tiene ID generado', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.be.a('string');",
+                  "    pm.expect(body.activo).to.be.true;",
+                  "    pm.collectionVariables.set('santanderId', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"0049\",\n  \"nombre\": \"Banco Santander\",\n  \"bicSwift\": \"BSCHESMMXXX\",\n  \"pais\": \"España\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Alta — Banco Nación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Tiene ID generado', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.codigoEntidad).to.eql('0017');",
+                  "    pm.collectionVariables.set('nacionId', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"0017\",\n  \"nombre\": \"Banco Nación\",\n  \"bicSwift\": \"NACNARBAXXX\",\n  \"pais\": \"Argentina\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Alta — BBVA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Tiene ID generado', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.pais).to.eql('España');",
+                  "    pm.collectionVariables.set('bbvaId', body.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"0182\",\n  \"nombre\": \"BBVA\",\n  \"bicSwift\": \"BBVAESMMXXX\",\n  \"pais\": \"España\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 — Consultas",
+      "description": "Consultar entidades (GET → 200 OK)",
+      "item": [
+        {
+          "name": "Listar todas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna array con 3 entidades', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array');",
+                  "    pm.expect(body.length).to.eql(3);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Buscar por ID — Santander",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna Banco Santander', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.codigoEntidad).to.eql('0049');",
+                  "    pm.expect(body.nombre).to.eql('Banco Santander');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{santanderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{santanderId}}"]
+            }
+          }
+        },
+        {
+          "name": "Filtrar por país — España",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Solo entidades de España', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.length).to.eql(2);",
+                  "    body.forEach(e => pm.expect(e.pais).to.eql('España'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades?pais=España",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"],
+              "query": [{ "key": "pais", "value": "España" }]
+            }
+          }
+        },
+        {
+          "name": "Solo activas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Todas tienen activo=true', () => {",
+                  "    const body = pm.response.json();",
+                  "    body.forEach(e => pm.expect(e.activo).to.be.true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades?soloActivas=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"],
+              "query": [{ "key": "soloActivas", "value": "true" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 — Modificación",
+      "description": "Actualizar entidad (PUT → 200 OK)",
+      "item": [
+        {
+          "name": "Modificar — Santander cambia nombre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Nombre actualizado', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.nombre).to.eql('Santander España S.A.');",
+                  "    pm.expect(body.codigoEntidad).to.eql('0049');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"0049\",\n  \"nombre\": \"Santander España S.A.\",\n  \"bicSwift\": \"BSCHESMMXXX\",\n  \"pais\": \"España\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{santanderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{santanderId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 — Bajas",
+      "description": "Baja lógica (PATCH → 204) y baja física (DELETE → 204)",
+      "item": [
+        {
+          "name": "Baja lógica — Desactivar BBVA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{bbvaId}}/desactivar",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{bbvaId}}", "desactivar"]
+            }
+          }
+        },
+        {
+          "name": "Verificar — BBVA desactivado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('BBVA está inactivo', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.activo).to.be.false;",
+                  "    pm.expect(body.nombre).to.eql('BBVA');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{bbvaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{bbvaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Baja física — Eliminar Banco Nación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{nacionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{nacionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Verificar — Nación eliminado (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Mensaje de error correcto', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql(404);",
+                  "    pm.expect(body.error).to.eql('Not Found');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/{{nacionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "{{nacionId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 — Errores",
+      "description": "Validar manejo de errores (400, 404, 409)",
+      "item": [
+        {
+          "name": "Error 409 — Código duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Estructura de error correcta', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql(409);",
+                  "    pm.expect(body.error).to.eql('Conflict');",
+                  "    pm.expect(body.message).to.include('0049');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"0049\",\n  \"nombre\": \"Banco Fantasma\",\n  \"bicSwift\": \"FANTASMAXXX\",\n  \"pais\": \"Argentina\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Error 409 — BIC/SWIFT duplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Mensaje menciona BIC/SWIFT', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.message).to.include('BSCHESMMXXX');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"9999\",\n  \"nombre\": \"Banco Nuevo\",\n  \"bicSwift\": \"BSCHESMMXXX\",\n  \"pais\": \"Chile\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Error 400 — Campos vacíos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Estructura de error correcta', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql(400);",
+                  "    pm.expect(body.error).to.eql('Bad Request');",
+                  "    pm.expect(body.message).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoEntidad\": \"\",\n  \"nombre\": \"\",\n  \"bicSwift\": \"\",\n  \"pais\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades"]
+            }
+          }
+        },
+        {
+          "name": "Error 404 — ID inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));",
+                  "pm.test('Estructura de error correcta', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql(404);",
+                  "    pm.expect(body.error).to.eql('Not Found');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/00000000-0000-0000-0000-000000000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 — Resumen (Auto-consumo)",
+      "description": "Endpoint que consume al propio servicio vía HTTP (GET → 200 OK)",
+      "item": [
+        {
+          "name": "Obtener resumen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Estructura de resumen correcta', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.totalEntidades).to.be.a('number');",
+                  "    pm.expect(body.activas).to.be.a('number');",
+                  "    pm.expect(body.inactivas).to.be.a('number');",
+                  "    pm.expect(body.entidadesPorPais).to.be.an('object');",
+                  "});",
+                  "pm.test('Contadores consistentes', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.activas + body.inactivas).to.eql(body.totalEntidades);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/entidades/resumen",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "entidades", "resumen"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
