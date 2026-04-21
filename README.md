@@ -11,6 +11,7 @@ Microservicio REST con CRUD completo sobre entidades bancarias. Desarrollado con
 | Spring Data JPA | - | Acceso a datos |
 | Spring Validation | - | Validacion de entrada |
 | H2 Database | In-memory | Base de datos de desarrollo |
+| SpringDoc OpenAPI | 3.0.3 | Documentacion API (Swagger UI) |
 | JUnit 5 + Mockito | - | Testing |
 | Gradle | 9.4.1 | Build tool |
 
@@ -124,6 +125,8 @@ Formato de error estandarizado:
 La aplicacion inicia en `http://localhost:8080`.
 
 La consola H2 esta disponible en `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:bancodb`, user: `sa`, sin password).
+
+La documentacion Swagger UI esta disponible en `http://localhost:8080/swagger-ui.html`.
 
 ### Ejecutar tests
 
